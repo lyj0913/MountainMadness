@@ -1,118 +1,89 @@
+
 library(shiny)
 library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(cowplot)
 
+Amazon = read_csv("AMZN.csv")
+Apple = read_csv("AAPL.csv")
 
-## For data reading, please put the csv file and R code in the same folder
-## Do not change the name of csv file. Data will be read in.
-Amazon <- read.csv("AMZN.csv")
-Apple <- read.csv("AAPL.csv")
-Amazon=Amazon[1:60,]
-Apple=Apple[1:60,]
-name_df=data.frame("name"=c("Open","High","Low","Close","Adj.Close","Volume"))
-name_df2=data.frame("name"=c("Apple","Amazon"))
+name_df = data_frame("name"=c("Apple","Amazon"))
 
-
+# Define UI for application that draws a histogram
 ui <- fluidPage(
     
     # Application title
-    titlePanel("Stock Data Visualization"),
+    titlePanel("Show the stock data in specific period of time"),
     
+    # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            
-            ### For choosing different properties with stock
-            selectInput("AAA","SELECT ITEMS",
+            selectInput("stock",
+                        label = strong("Stock"),
                         choices = name_df$name,
-                        selected = name_df$name[1]),
-            ### For choosing different stock 
-            selectInput("BBB","SELECT STOCK",
-                        choices = name_df2$name,
-                        selected = name_df2$name[1])
+                        selected = "Apple"),
+            checkboxGroupInput("item",
+                               strong("Select Item"),
+                               choices = c("Close","High","Low","Open"),
+                               selected = "Close"),
+            
+            dateRangeInput("date", strong("Date range"), start = "2020-02-13", end = "2021-02-12",
+                           min = "2020-02-13", max = "2021-02-12"),
+            
+            numericInput("price",label = strong("Price"),value=0)
             
         ),
         
         # Show a plot of the generated distribution
         mainPanel(
-            plotOutput("good")
-        )
-    )
+            tabsetPanel(
+                type = "tabs",
+                tabPanel("Plot",plotOutput("lineplot",height = "300px")),
+                tabPanel("Revenue",plotOutput("revenue")),
+                tabPanel("Data",DT::dataTableOutput("table"))
+            )
+        ))
 )
 
-
-
-server <- function(input,output){
-    ### customizing plot 
-    output$good<-renderPlot({
-        
-        if(input$BBB=="Apple")
-        {  
-            if(input$AAA=="Open")
-            {
-                shape=8
-            }
-            if(input$AAA=="High")
-            {
-                shape=4
-            }
-            if(input$AAA=="Low")
-            {
-                shape=11
-            }
-            if(input$AAA=="Close")
-            {
-                shape=7
-            }
-            if(input$AAA=="Adj.Close")
-            {
-                shape=9
-            }
-            if(input$AAA=="Volume")
-            {
-                shape=10
-            }
-            data<-Apple[1:60,]
-            x=Apple[,1]
-            y=Apple[,input$AAA]
-            color='brown3'
-            
-        }
-        if(input$BBB=="Amazon")
-        {
-            if(input$AAA=="Open")
-            {
-                shape=8
-            }
-            if(input$AAA=="High")
-            {
-                shape=4
-            }
-            if(input$AAA=="Low")
-            {
-                shape=11
-            }
-            if(input$AAA=="Close")
-            {
-                shape=7
-            }
-            if(input$AAA=="Adj.Close")
-            {
-                shape=9
-            }
-            if(input$AAA=="Volume")
-            {
-                shape=10
-            }
-            data<-Amazon[1:60,]
-            x=Amazon[,1]
-            y=Amazon[,input$AAA]
-            color='turquoise3'
-            
-            
-        }
-        ggplot(data=data,aes(x=x,y=y))+geom_point(shape=shape,color=color, size=4)+theme(axis.text.x = element_text(angle=90,vjust = 0.5,colour = "black"),axis.text=element_text(size=11),axis.title=element_text(size=13),axis.text.y = element_text(colour = "black"))+labs(x="Date")+labs(y="Value")+ ggtitle("Date VS Value")
-        
+# Define server logic required to draw a histogram
+server <- function(input, output){
+    SelectedStock<-reactive({
+        switch(input$stock,
+               "Apple"=Apple,
+               "Amazon"=Amazon)
     })
     
+    SelectedDate=reactive({
+        SelectedStock() %>%
+            filter(Date>=input$date[1],Date<=input$date[2]) %>%
+            mutate(Rev=Close-input$price) %>%
+            mutate(Price=ifelse(Rev<0,"neg","pos"))
+    })
+    
+    itemType = reactive({
+        as.vector(input$item)
+    })
+    
+    output$lineplot = renderPlot({
+        g=ggplot(SelectedDate(),aes(x=Date))
+        
+        if("Close" %in% itemType()){g=g+geom_line(aes(y=Close))}
+        if("Open" %in% itemType()){g=g+geom_line(aes(y=Open))}
+        if("High" %in% itemType()){g=g+geom_line(aes(y=High))}
+        if("Low" %in% itemType()){g=g+geom_line(aes(y=Low))}
+        
+        print(g)
+    })
+    
+    output$revenue = renderPlot(
+        ggplot(SelectedDate(),aes(x=Date,y=Rev))+geom_area(aes(fill=Price))+geom_line()+geom_hline(yintercept=0))
+    
+    
+    output$table <- DT::renderDataTable(
+        DT::datatable(SelectedDate(), options = list(pageLength = 25)))
     
 }
+
+# Run the application 
 shinyApp(ui = ui, server = server)
