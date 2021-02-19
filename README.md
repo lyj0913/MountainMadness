@@ -30,7 +30,7 @@ After the Library install, the data will be auto-connect to the finance database
   * http://127.0.0.1:5961  (or you localhost: ) 
   
   Also can be access to our demo page:
-  Might need to wait for few seconds to have the plots appeared on the main tab since the dataset is a bit larger in the time series forecast page.
+  Might need to wait for few seconds depending on the internet environment
   * Time series forecasting page: https://yla507.shinyapps.io/hackthon2021/
   * Stock Data Visualization page: https://yla507.shinyapps.io/appp/
   * Show the stock data in specific period of time page: https://yla507.shinyapps.io/yoyo/
