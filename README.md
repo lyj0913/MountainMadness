@@ -7,7 +7,7 @@
 
 ### Brief description: <h3> 
 Our project topic is stock. We have created three different Shinyapps with Rstudio. 
-Shinyapps.io is a self-service platform that makes it easy for you to share your shiny applications on the web in just a few minutes. Many customers use shinyapps.io to prove out some concepts, build out a prototype, or just run it for a short period of time for their own purposes, while others are using it as a core component of their analytical offerings within a larger online property. (Credit: shinyapps.io user guide https://docs.rstudio.com/shinyapps.io/)
+Shinyapps.io is a self-service platform that makes it easy for you to share your shiny applications on the web in just a few minutes. Many customers use shinyapps.io to prove out some concepts, build out a prototype, or just run it for a short period of time for their own purposes, while others are using it as a core component of their analytical offerings within a larger online property. (shinyapps.io user guide https://docs.rstudio.com/shinyapps.io/)
 
 The service runs in the cloud on shared servers that are operated by RStudio. Each application is self-contained and operates on either data that is uploaded with the application, or data that the code pulls from third-party data stores, such as databases or web services.
 These three apps has different tab which could allow the user select different desire informations for different stock and properties. The app functions include data visluzation, and forecasting. By transforming the data into easy-reading visluzation, our project enabled people gain better insight of stock.
